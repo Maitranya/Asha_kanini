@@ -469,6 +469,22 @@ export default function Analytics() {
           border: 1px solid rgba(94,234,212,0.25);
         }
 
+        .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .back-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12.5px;
+          font-weight: 600;
+          color: var(--ink);
+          background: var(--bg-2);
+          border: 1px solid var(--line);
+          padding: 6px 12px;
+          border-radius: 8px;
+          text-decoration: none;
+        }
+        .back-link:hover { background: var(--bg-3); }
+
         .tab-nav {
           display: flex;
           gap: 4px;
@@ -631,7 +647,10 @@ export default function Analytics() {
             <span>ASSESSMENT & USAGE INSIGHTS</span>
           </div>
         </div>
-        <span className="sample-badge">Sample data export · {DATA.kpis.yearRange[0]}–{DATA.kpis.yearRange[1]}</span>
+        <div className="header-actions">
+          <a href="/" className="back-link">← Back to Dashboard</a>
+          <span className="sample-badge">Sample data export · {DATA.kpis.yearRange[0]}–{DATA.kpis.yearRange[1]}</span>
+        </div>
       </header>
 
       <nav className="tab-nav">

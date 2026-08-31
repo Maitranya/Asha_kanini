@@ -1479,7 +1479,7 @@ export default function App() {
           >
             <Search size={16} /> Search
           </button>
-          <a href="/analytics.html" target="_blank" rel="noopener noreferrer" className="nav-btn">
+          <a href="/analytics" className="nav-btn">
             <BarChart3 size={16} /> Analytics
           </a>
           <button
