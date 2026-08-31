@@ -6,14 +6,14 @@ import {
   User, LogOut, UserPlus, Plus, Loader2, AlertCircle, Mail, Lock, Eye, EyeOff,
 } from "lucide-react";
 
-// Point this at your deployed backend once it's live.
-// While testing locally, this expects `npm run dev` running on port 4000.
-// Automatically points at whichever host served this page, on port 4000 —
-// so this works both at localhost AND when opened from another device via
-// your laptop's network IP (e.g. http://192.168.1.5:5173). Once deployed for
-// real, replace this whole line with your deployed backend's URL, e.g.:
-// const API_BASE = "https://your-backend.onrender.com";
-const API_BASE = `http://${window.location.hostname}:4000`;
+// Points at the deployed backend on Render. In production, Vercel injects
+// VITE_API_BASE (set it in Project Settings → Environment Variables).
+// If that's not set (e.g. running locally with `npm run dev`), it falls
+// back to whichever host served this page, on port 4000 — so local dev
+// still works both at localhost AND when opened from another device via
+// your laptop's network IP (e.g. http://192.168.1.5:5173).
+const API_BASE =
+  import.meta.env.VITE_API_BASE || `http://${window.location.hostname}:4000`;
 
 async function apiFetch(path, { method = "GET", body, token } = {}) {
   let res;
