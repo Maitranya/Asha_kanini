@@ -5,6 +5,7 @@ import {
   GraduationCap, BarChart3, Menu, X, Compass, Star, MapPin,
   User, LogOut, UserPlus, Plus, Loader2, AlertCircle, Mail, Lock, Eye, EyeOff,
 } from "lucide-react";
+import { SCHOOLS, STUDENTS_BY_SCHOOL } from "./schoolsData";
 
 // Points at the deployed backend on Render. In production, Vercel injects
 // VITE_API_BASE (set it in Project Settings → Environment Variables).
@@ -12,8 +13,9 @@ import {
 // back to whichever host served this page, on port 4000 — so local dev
 // still works both at localhost AND when opened from another device via
 // your laptop's network IP (e.g. http://192.168.1.5:5173).
-const API_BASE =
-  import.meta.env.VITE_API_BASE || `http://${window.location.hostname}:4000`;
+const API_BASE = (
+  import.meta.env.VITE_API_BASE || `http://${window.location.hostname}:4000`
+).replace(/\/+$/, ""); // strip trailing slash(es) so paths never end up double-slashed
 
 async function apiFetch(path, { method = "GET", body, token } = {}) {
   let res;
@@ -423,8 +425,15 @@ function AccountPanel({
 }) {
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({ name: "", email: "", password: "", schoolName: "" });
-  const [newStudent, setNewStudent] = useState({ name: "", classLevel: "3" });
+  const [newStudentName, setNewStudentName] = useState("");
+  const [newStudentClass, setNewStudentClass] = useState("3");
   const [showPassword, setShowPassword] = useState(false);
+
+  // Students already on this teacher's roster, so they can't be picked again
+  // from the dropdown below.
+  const takenNames = new Set(students.map((s) => s.name));
+  const schoolRoster = STUDENTS_BY_SCHOOL[teacher?.school_name] || [];
+  const availableStudents = schoolRoster.filter((s) => !takenNames.has(s.name));
 
   function submitAuth(e) {
     e.preventDefault();
@@ -437,9 +446,11 @@ function AccountPanel({
 
   function submitStudent(e) {
     e.preventDefault();
-    if (!newStudent.name.trim()) return;
-    onAddStudent(newStudent);
-    setNewStudent({ name: "", classLevel: "3" });
+    if (!newStudentName) return;
+    const picked = schoolRoster.find((s) => s.name === newStudentName);
+    if (!picked) return;
+    onAddStudent({ name: picked.name, classLevel: String(picked.classLevel) });
+    setNewStudentName("");
   }
 
   if (!teacher) {
@@ -491,14 +502,23 @@ function AccountPanel({
                   </div>
                 </label>
                 <label>
-                  School <span className="label-optional">(optional)</span>
+                  School
                   <div className="input-wrap">
                     <BookOpen size={16} />
-                    <input
-                      placeholder="e.g. Govt. Primary School, T. Nagar"
+                    <select
+                      required
                       value={form.schoolName}
                       onChange={(e) => setForm({ ...form, schoolName: e.target.value })}
-                    />
+                    >
+                      <option value="" disabled>
+                        Select your school
+                      </option>
+                      {SCHOOLS.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </label>
               </>
@@ -597,22 +617,20 @@ function AccountPanel({
           </div>
 
           <form onSubmit={submitStudent} className="add-student-form">
-            <input
-              placeholder="Student name"
-              value={newStudent.name}
-              onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })}
-            />
             <select
-              value={newStudent.classLevel}
-              onChange={(e) => setNewStudent({ ...newStudent, classLevel: e.target.value })}
+              value={newStudentName}
+              onChange={(e) => setNewStudentName(e.target.value)}
             >
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((c) => (
-                <option key={c} value={c}>
-                  Class {c}
+              <option value="">
+                {availableStudents.length ? "Select a student" : "No more students at this school"}
+              </option>
+              {availableStudents.map((s) => (
+                <option key={s.name} value={s.name}>
+                  {s.name} (Class {s.classLevel})
                 </option>
               ))}
             </select>
-            <button className="btn-primary" type="submit">
+            <button className="btn-primary" type="submit" disabled={!newStudentName}>
               <Plus size={15} /> Add
             </button>
           </form>
