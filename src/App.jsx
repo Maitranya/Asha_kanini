@@ -420,6 +420,7 @@ function AccountPanel({
   selectedStudentId,
   onSelectStudent,
   onAddStudent,
+  onRemoveStudent,
   authLoading,
   authError,
 }) {
@@ -602,17 +603,28 @@ function AccountPanel({
           )}
           <div className="student-list">
             {students.map((s) => (
-              <button
+              <div
                 key={s.id}
                 className={"student-row" + (s.id === selectedStudentId ? " student-row-active" : "")}
-                onClick={() => onSelectStudent(s.id)}
               >
-                <span className="student-avatar">
-                  <User size={14} />
-                </span>
-                <span className="student-name">{s.name}</span>
-                <span className="student-class">Class {s.class_level}</span>
-              </button>
+                <button className="student-row-main" onClick={() => onSelectStudent(s.id)}>
+                  <span className="student-avatar">
+                    <User size={14} />
+                  </span>
+                  <span className="student-name">{s.name}</span>
+                  <span className="student-class">Class {s.class_level}</span>
+                </button>
+                <button
+                  className="student-remove"
+                  title="Remove from this session"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemoveStudent(s.id);
+                  }}
+                >
+                  <X size={14} />
+                </button>
+              </div>
             ))}
           </div>
 
@@ -659,20 +671,13 @@ export default function App() {
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [syncError, setSyncError] = useState("");
 
-  async function loadStudents(token) {
-    setStudentsLoading(true);
-    try {
-      const data = await apiFetch("/api/students", { token });
-      setStudents(data.students);
-      if (data.students.length > 0 && !selectedStudentId) {
-        setSelectedStudentId(data.students[0].id);
-      }
-    } catch (err) {
-      setSyncError(err.message);
-    } finally {
-      setStudentsLoading(false);
-    }
-  }
+  // NOTE: students are intentionally NOT fetched from the backend on
+  // login/register. Each session starts with an empty roster in the UI —
+  // adding a student still persists it (and all their progress) to the
+  // backend permanently, but a fresh login won't re-show previously added
+  // students. This is deliberate, not a bug: the backend keeps the full
+  // history of students and what they did, but the "who's active right
+  // now" list is session-scoped on the frontend.
 
   async function handleLogin({ email, password }) {
     setAuthLoading(true);
@@ -684,7 +689,6 @@ export default function App() {
       });
       setTeacher(data.teacher);
       setAccessToken(data.accessToken);
-      loadStudents(data.accessToken);
     } catch (err) {
       setAuthError(err.message);
     } finally {
@@ -702,7 +706,6 @@ export default function App() {
       });
       setTeacher(data.teacher);
       setAccessToken(data.accessToken);
-      loadStudents(data.accessToken);
     } catch (err) {
       setAuthError(err.message);
     } finally {
@@ -735,6 +738,16 @@ export default function App() {
     } catch (err) {
       setSyncError(err.message);
     }
+  }
+
+  // Removes a student from THIS session's visible list only. Does not call
+  // any delete endpoint — the student row and all their recorded progress
+  // stay in the backend permanently. This just lets a teacher undo an
+  // accidental add, or tidy up who's shown as "currently in session"
+  // without losing any activity history server-side.
+  function handleRemoveStudent(id) {
+    setStudents((prev) => prev.filter((s) => s.id !== id));
+    setSelectedStudentId((prev) => (prev === id ? null : prev));
   }
 
   async function handleSelectStudent(id) {
@@ -1429,15 +1442,29 @@ export default function App() {
         .muted-text { font-size: 13px; color: var(--ink-soft); }
         .student-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
         .student-row {
-          display: flex; align-items: center; gap: 10px;
+          display: flex; align-items: stretch; gap: 6px;
           background: var(--paper);
           border: 1.5px solid var(--line);
           border-radius: 10px;
-          padding: 9px 12px;
-          cursor: pointer;
-          text-align: left;
+          padding: 4px;
         }
         .student-row-active { border-color: var(--marigold); background: #FFF7E8; }
+        .student-row-main {
+          flex: 1;
+          display: flex; align-items: center; gap: 10px;
+          padding: 5px 8px;
+          cursor: pointer;
+          text-align: left;
+          background: none; border: none;
+        }
+        .student-remove {
+          display: flex; align-items: center; justify-content: center;
+          width: 30px; border-radius: 8px;
+          background: none; border: none;
+          color: var(--ink-soft); cursor: pointer;
+          flex-shrink: 0;
+        }
+        .student-remove:hover { background: var(--line); color: var(--ink); }
         .student-avatar {
           width: 26px; height: 26px; border-radius: 50%;
           background: var(--chalk); color: var(--white);
@@ -1590,6 +1617,7 @@ export default function App() {
             selectedStudentId={selectedStudentId}
             onSelectStudent={handleSelectStudent}
             onAddStudent={handleAddStudent}
+            onRemoveStudent={handleRemoveStudent}
             authLoading={authLoading}
             authError={authError}
           />
