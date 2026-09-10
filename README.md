@@ -4,7 +4,7 @@
 
 The app has two independent halves that share one codebase, one build, and one visual language:
 
-- **The Learning Trail** — a browsing tool where a teacher picks a class (1–8) and a term (I/II/III) and gets a curated list of external learning resources (videos, worksheets, games, books) per topic, in Tamil/English, sourced from Diksha, Khan Academy, Math Playground, Cool Math for Kids, Math Learning Center, Hooda Math, ICT Games, Easy Teaching, mathgames.com, and similar sites. Teachers can log in, add student profiles, and mark resources "completed" per student.
+- **The Learning Trail** — a browsing tool where a teacher picks a class (1–8) and a term (I/II/III) and gets a curated list of external learning resources (videos, worksheets, games, books) per topic, in Tamil/English, sourced from Diksha, Khan Academy, Math Playground, Cool Math for Kids, Math Learning Center, Hooda Math, ICT Games, Easy Teaching, mathgames.com, and similar sites. Teachers can log in, add student profiles, and mark resources "completed" per student apart from the auto done marking.
 - **The Analytics Dashboard** — a six-tab dashboard summarizing assessment data (the "AAA" annual assessment) collected across Asha-supported schools: scores, oral-skill progression, and engagement with the trail itself.
 
 These two halves are functionally independent — the Trail's content catalog has nothing to do with the assessment data behind Analytics — but they're built as two views of a single React app and deployed together.
