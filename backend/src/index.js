@@ -1,3 +1,5 @@
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -6,6 +8,9 @@ const cookieParser = require("cookie-parser");
 const authRoutes = require("./routes/auth");
 const studentRoutes = require("./routes/students");
 const progressRoutes = require("./routes/progress");
+const analyticsRoutes = require("./routes/analytics");
+const chatRoutes = require("./routes/chat");
+const contentRoutes = require("./routes/content");
 
 const app = express();
 
@@ -33,12 +38,22 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-app.get("/api/health", (req, res) => res.json({ ok: true }));
+app.get("/api/health", (req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.json({ ok: true, timestamp: Date.now() });
+});
+app.head("/api/health", (req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.status(200).end();
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
 // Progress routes are nested under /api/students/:studentId/progress
 app.use("/api/students", progressRoutes);
+app.use("/api/analytics/chat", chatRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/content", contentRoutes);
 
 app.use((req, res) => res.status(404).json({ error: "Not found" }));
 
@@ -49,6 +64,10 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`Kanini Padhai API listening on port ${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Kanini Padhai API listening on port ${PORT}`);
+  });
+}
+
+module.exports = app;

@@ -22,3 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+#dump of the client's data
+backend/assmt_usage_data_dump_*.sql
+backend/migrations/002_legacy_client_data.sql
+
+# Environment secrets
+.env
+.env.*
+backend/.env
+backend/.env.*
+
+# Sensitive contracts and project specifications
+Asha_Insights_HLD_Contract_final.txt
+*Contract*
+*contract*
